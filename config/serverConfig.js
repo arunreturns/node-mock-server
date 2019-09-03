@@ -49,7 +49,7 @@ const serverConfig = (app) => {
     app.use(errorhandler());
   }
   /* Protect the API */
-  app.use(protect.express.sqlInjection({ body: true, loggerFunction: logger.error }));
+  // app.use(protect.express.sqlInjection({ body: true, loggerFunction: logger.error }));
 
   app.use(protect.express.xss({ body: true, loggerFunction: logger.error }));
 
