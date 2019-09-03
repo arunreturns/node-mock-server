@@ -28,7 +28,7 @@ module.exports = (server) => {
     const { filePath } = req.query;
     logger.info("Getting " + filePath);
     try {
-      const fileContent = fs.unlinkSync(path.join(__dirname, ...filePath.split("/")));
+      fs.unlinkSync(path.join(__dirname, ...filePath.split("/")));
       res.status(200).send(`${filePath} removed successfully`);
     } catch (e) {
       logger.error(e);
@@ -41,7 +41,6 @@ module.exports = (server) => {
     logger.info("Getting " + filePath);
     try {
       const { fileContent } = req.body;
-      logger.info("Filecontent " + fileContent);
       fs.writeFileSync(path.join(__dirname, ...filePath.split("/")), fileContent);
       res.status(200).send(`${filePath} updated successfully`);
     } catch (e) {

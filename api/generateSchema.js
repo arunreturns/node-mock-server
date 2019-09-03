@@ -8,12 +8,7 @@ const generateSchema = (server) => {
   jsf.extend("faker", () => {
     const faker = require("faker");
     const fakerCustoms = require('./custom/fakerCustoms');
-    faker.locale = "en_IND";
-
-    faker.custom = {
-      ...fakerCustoms(faker)
-    };
-
+    fakerCustoms(faker);
     return faker;
   });
 
