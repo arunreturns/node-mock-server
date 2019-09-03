@@ -1,19 +1,19 @@
 const jsonServer = require('json-server');
 const server = jsonServer.create();
 const middlewares = jsonServer.defaults();
-const generateSchema = require('./generateSchema');
-const logger = require("./loggerConfig");
+const generateSchema = require('./api/generateSchema');
+const logger = require("./config/loggerConfig");
 const fs = require("fs");
 
 server.logger = logger;
 
-require("./serverConfig")(server);
+require("./config/serverConfig")(server);
 
 // Create schema if it doesn't exist
 // if ( !fs.existsSync("db.json"))
 const recreateSchema = (server) => {
   logger.info("Removing existing db.json");
-  if ( fs.existsSync("db.json"))
+  if (fs.existsSync("db.json"))
     fs.unlinkSync("db.json");
 
   logger.info("Creating new db.json");
@@ -33,8 +33,6 @@ const getRouter = () => {
 server.get('/gen', (req, res) => {
   recreateSchema(server);
   res.status(200).send("Schema Generated Successfully");
-
-  server.use('/api', getRouter());
 });
 
 server.use('/api', getRouter());

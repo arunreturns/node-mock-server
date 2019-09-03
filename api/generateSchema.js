@@ -3,7 +3,7 @@ module.exports = (server) => {
   const jsf = require("json-schema-faker");
   const fs = require("fs");
   const path = require("path");
-  const schemaPath = path.join(__dirname, "schema");
+  const modelsPath = path.join(__dirname, "models");
   // Add faker to json-schema-faker
   jsf.extend("faker", () => {
     const faker = require("faker");
@@ -11,7 +11,7 @@ module.exports = (server) => {
 
     faker.custom = {
       licensePlateNumber: () => {
-        return faker.random.arrayElement(faker.definitions.address.state_abbr) + faker.random.number({min: 11, max: 99, precision: 2}) + "-" + faker.random.arrayElement(faker.definitions.address.country_code) + "-" + faker.random.number({min: 1000, max: 9999});
+        return faker.random.arrayElement(faker.definitions.address.state_abbr) + faker.random.number({ min: 11, max: 99, precision: 2 }) + "-" + faker.random.arrayElement(faker.definitions.address.country_code) + "-" + faker.random.number({ min: 1000, max: 9999 });
       }
     };
 
@@ -24,7 +24,7 @@ module.exports = (server) => {
     return new Chance();
   });
 
-  const dirList = fs.readdirSync(schemaPath);
+  const dirList = fs.readdirSync(modelsPath);
 
   const schema = {
     type: "object",
@@ -37,11 +37,11 @@ module.exports = (server) => {
     const schemaName = dir.split(".")[0];
     if (schemaName !== "definitions") {
       required.push(schemaName);
-      schema.properties[schemaName] = require(path.join(schemaPath, dir));
+      schema.properties[schemaName] = require(path.join(modelsPath, dir));
     }
   });
   // Add definitions
-  schema.definitions = require(path.join(schemaPath, "definitions"));
+  schema.definitions = require(path.join(modelsPath, "definitions"));
   // Add required schema
   schema.required = required;
 
