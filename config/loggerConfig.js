@@ -4,6 +4,7 @@ const logFormatter = info => {
   const { timestamp, message } = info;
   return `${timestamp} - ${message}`;
 };
+
 const logger = createLogger({
   level: 'debug',
   format: format.combine(

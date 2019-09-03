@@ -1,46 +1,27 @@
 const jsonServer = require('json-server');
 const server = jsonServer.create();
 const middlewares = jsonServer.defaults();
+const router = jsonServer.router('db.json');
 const generateSchema = require('./api/generateSchema');
 const logger = require("./config/loggerConfig");
 const fs = require("fs");
 
 server.logger = logger;
+server.jsonRouter = router;
 
 require("./config/serverConfig")(server);
 
-// Create schema if it doesn't exist
-// if ( !fs.existsSync("db.json"))
-const recreateSchema = (server) => {
-  logger.info("Removing existing db.json");
-  if (fs.existsSync("db.json"))
-    fs.unlinkSync("db.json");
-
-  logger.info("Creating new db.json");
-  generateSchema(server);
-};
-
-// if ( !fs.existsSync("db.json"))
-recreateSchema(server);
+if (!fs.existsSync("db.json")) {
+  const db = generateSchema(server);
+  router.db.setState(JSON.parse(db));
+}
 
 server.use(middlewares);
+server.use('/api', router);
 
-const getRouter = () => {
-  const router = jsonServer.router('db.json');
-  return router;
-};
+require('./api/expressRoutes')(server);
 
-server.get('/gen', (req, res) => {
-  recreateSchema(server);
-  res.status(200).send("Schema Generated Successfully");
-});
-
-server.use('/api', getRouter());
-
-require('./expressRoutes')(server);
-
-const PORT = process.env.PORT || 8080;
-const IP = process.env.IP || '0.0.0.0';
+const { PORT = 8080, IP = "0.0.0.0" } = process.env;
 
 server.listen(PORT, () => {
   logger.info(`Server is running at ${IP}:${PORT}`);

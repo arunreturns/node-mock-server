@@ -1,4 +1,4 @@
-module.exports = (server) => {
+const generateSchema = (server) => {
   const logger = server.logger;
   const jsf = require("json-schema-faker");
   const fs = require("fs");
@@ -12,6 +12,13 @@ module.exports = (server) => {
     faker.custom = {
       licensePlateNumber: () => {
         return faker.random.arrayElement(faker.definitions.address.state_abbr) + faker.random.number({ min: 11, max: 99, precision: 2 }) + "-" + faker.random.arrayElement(faker.definitions.address.country_code) + "-" + faker.random.number({ min: 1000, max: 9999 });
+      },
+      carMake: () => {
+        const carList = require('./data/car-list.json');
+        const carInfo = faker.random.arrayElement(carList);
+        const carBrand = carInfo.brand;
+        const carMake = faker.random.arrayElement(carInfo.models);
+        return `${carBrand} - ${carMake}`;
       }
     };
 
@@ -24,7 +31,7 @@ module.exports = (server) => {
     return new Chance();
   });
 
-  const dirList = fs.readdirSync(modelsPath);
+  const modelsList = fs.readdirSync(modelsPath);
 
   const schema = {
     type: "object",
@@ -33,11 +40,11 @@ module.exports = (server) => {
 
   // Add properties
   const required = [];
-  dirList.forEach(dir => {
-    const schemaName = dir.split(".")[0];
+  modelsList.forEach(model => {
+    const schemaName = model.split(".")[0];
     if (schemaName !== "definitions") {
       required.push(schemaName);
-      schema.properties[schemaName] = require(path.join(modelsPath, dir));
+      schema.properties[schemaName] = require(path.join(modelsPath, model));
     }
   });
   // Add definitions
@@ -50,4 +57,7 @@ module.exports = (server) => {
   fs.writeFileSync("./db.json", generatedSchema.toString());
 
   logger.info("Schema Generated Successfully");
-};
+  return generatedSchema;
+}
+
+module.exports = generateSchema;

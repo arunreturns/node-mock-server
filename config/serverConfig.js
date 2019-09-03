@@ -1,27 +1,62 @@
+const chalk = require('chalk');
 const bodyParser = require('body-parser');
 const methodOverride = require('method-override');
 const morgan = require('morgan');
 const helmet = require('helmet');
 const compression = require('compression');
-const path = require('path');
-const favicon = require('serve-favicon');
-const fs = require('fs');
+// const path = require('path'); const favicon = require("serve-favicon");
+const initStats = require('@phil-r/stats');
+const errorhandler = require('errorhandler');
+const cors = require('cors');
+const expressStatusMonitor = require('express-status-monitor');
+// const csrf = require('csurf')
+const protect = require('@risingstack/protect');
+const logger = require('./loggerConfig');
 
-module.exports = (server) => {
-  if (fs.existsSync(path.join(__dirname, 'favicon.ico')))
-    server.use(favicon(path.join(__dirname, 'favicon.ico')));
-  server.use(morgan('dev'));
-  server.use(bodyParser.json());
-  server.use(bodyParser.json({ type: 'application/vnd.api+json' }));
-  server.use(bodyParser.urlencoded({ extended: true }));
-  server.use(methodOverride('X-HTTP-Method-Override'));
-  server.use(helmet());
-  server.use(compression());
+const serverConfig = (app) => {
+  logger.info(`${chalk.yellow('⚒')} Configuring server`);
+  // app.use(favicon(path.join(__dirname, 'favicon.ico')));
+  const { statsMiddleware, getStats } = initStats({
+    endpointStats: true, customStats: true, addHeader: true
+  });
+  /* Enable CSRF */
+  // app.use(csrf({cookie: true}))
+  /* Log API requests */
+  app.use(morgan('dev'));
+  /* Use bodyParser */
+  app.use(bodyParser.json());
+  app.use(bodyParser.json({ type: 'application/vnd.api+json' }));
+  app.use(bodyParser.urlencoded({ extended: true }));
+  /* Use mehodOverride */
+  app.use(methodOverride('X-HTTP-Method-Override'));
+  /* Helmet is actually just a collection of nine smaller middleware functions
+    that set security-related HTTP headers */
+  app.use(helmet());
+  /* Gzip compressing can greatly decrease the size of the response body
+   and hence increase the speed of a web app */
+  app.use(compression());
+  /* Middleware for monitoring express status */
+  app.use(expressStatusMonitor());
+  /* Stats */
+  app.use(statsMiddleware);
+  app.get('/stats', (req, res) => res.send(getStats()));
 
   /* Enable CORS */
-  server.use(function (req, res, next) {
-    res.header("Access-Control-Allow-Origin", "*");
-    res.header("Access-Control-Allow-Headers", "Origin, X-Requested-With, Content-Type, Accept");
-    next();
-  });
+  app.use(cors());
+
+  if (process.env.NODE_ENV === 'development') {
+    // Only add errorHandler for development
+    app.use(errorhandler());
+  }
+  /* Protect the API */
+  app.use(protect.express.sqlInjection({ body: true, loggerFunction: logger.error }));
+
+  app.use(protect.express.xss({ body: true, loggerFunction: logger.error }));
+
+  // app.use(protect.express.rateLimiter({   db: client,   id: (request) =>
+  // request.connection.remoteAddress }))
+
+  logger.info(`${chalk.yellow('⚒')} Server configuration completed`);
 };
+
+module.exports = serverConfig;

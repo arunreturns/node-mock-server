@@ -9,6 +9,10 @@ module.exports = {
       id: {
         $ref: "#/definitions/positiveInt"
       },
+      carMake: {
+        "type": "string",
+        "faker": "custom.carMake"
+      },
       customerName: {
         "type": "string",
         "faker": "name.findName"
@@ -41,6 +45,7 @@ module.exports = {
     },
     "required": [
       "id",
+      "carMake",
       "customerName",
       "vehicleNumber",
       "serviceDate",
