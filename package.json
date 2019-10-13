@@ -4,7 +4,8 @@
   "description": "Mock server for development",
   "main": "index.js",
   "scripts": {
-    "start": "nodemon server $IP $PORT"
+    "start": "node server",
+    "dev": "nodemon server $IP $PORT"
   },
   "keywords": [],
   "author": "",
