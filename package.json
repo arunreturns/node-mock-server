@@ -19,7 +19,7 @@
     "cors": "^2.8.5",
     "dotenv": "^8.1.0",
     "errorhandler": "^1.5.1",
-    "express": "^4.16.4",
+    "express": "^4.17.3",
     "express-status-monitor": "^1.2.6",
     "faker": "4.1.0",
     "helmet": "^3.20.1",
